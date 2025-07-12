@@ -1,16 +1,16 @@
 from dia.model import Dia
 
 ## Select device: CPU or GPU
-import torch
-device = torch.device("cpu")
-print(f"Using device: {device}")
+#import torch
+#device = torch.device("cuda")
+#print(f"Using device: {device}")
 
 target_model = "nari-labs/Dia-1.6B-0626"
 
 #model = Dia.from_pretrained(target_model, compute_dtype="float16")
-model = Dia.from_pretrained(target_model, compute_dtype="int4", device=device)
+#model = Dia.from_pretrained(target_model, compute_dtype="float16", device=device)
 #model = Dia.from_pretrained(target_model, compute_dtype="float32", device=device)
-#model = Dia.from_pretrained(target_model, compute_dtype="float16")
+model = Dia.from_pretrained(target_model, compute_dtype="float16")
 print(f"Loaded model - '{target_model}'")
 
 # You should put the transcript of the voice you want to clone
@@ -112,7 +112,8 @@ for input_text in text_to_generate:
         #cfg_scale=4.0,
         cfg_scale=1.0,
         temperature=1.8,
-        top_p=0.90,
+        #top_p=0.90,
+        top_p=0.20,
         cfg_filter_top_k=50,
     )
     text_heap += input_text
