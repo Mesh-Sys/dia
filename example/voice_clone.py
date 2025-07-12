@@ -8,8 +8,8 @@ print(f"Using device: {device}")
 target_model = "nari-labs/Dia-1.6B-0626"
 
 #model = Dia.from_pretrained(target_model, compute_dtype="float16")
-#model = Dia.from_pretrained(target_model, compute_dtype="float16", device=device)
-model = Dia.from_pretrained(target_model, compute_dtype="float32", device=device)
+model = Dia.from_pretrained(target_model, compute_dtype="float16", device=device)
+#model = Dia.from_pretrained(target_model, compute_dtype="float32", device=device)
 print(f"Loaded model - '{target_model}'")
 
 # You should put the transcript of the voice you want to clone
