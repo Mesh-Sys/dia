@@ -7,7 +7,8 @@ model = Dia.from_pretrained("nari-labs/Dia-1.6B-0626", compute_dtype="float16")
 # We will use the audio created by running simple.py as an example.
 # Note that you will be REQUIRED TO RUN simple.py for the script to work as-is.
 clone_from_text = "[S1] Dia is an open weights text to dialogue model. [S2] You get full control over scripts and voices. [S1] Wow. Amazing. (laughs) [S2] Try it now on Git hub or Hugging Face."
-clone_from_audio = "simple.mp3"
+#clone_from_audio = "simple.mp3"
+clone_from_audio = "girl.mp3"
 
 # For your custom needs, replace above with below and add your audio file to this directory:
 # clone_from_text = "[S1] ... [S2] ... [S1] ... corresponding to your_audio_name.mp3"
@@ -28,4 +29,4 @@ output = model.generate(
     cfg_filter_top_k=50,
 )
 
-model.save_audio("voice_clone.mp3", output)
+model.save_audio("voice_clone_girl.mp3", output)
