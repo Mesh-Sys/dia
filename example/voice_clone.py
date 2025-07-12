@@ -22,7 +22,9 @@ text_to_generate = "[S2] Thanks you all. [S1] What's your name? [S2] My name is 
 
 # It will only return the audio from the text_to_generate
 output = model.generate(
-    clone_from_text + text_to_generate,
+    #clone_from_text + text_to_generate,
+    clone_from_text,
+    #text_to_generate,
     audio_prompt=clone_from_audio,
     use_torch_compile=False,
     verbose=True,
