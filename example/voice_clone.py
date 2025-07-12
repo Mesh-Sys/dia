@@ -5,10 +5,12 @@ from dia.model import Dia
 device = torch.device("cpu")
 print(f"Using device: {device}")
 
+target_model = "nari-labs/Dia-1.6B-0626"
 
-#model = Dia.from_pretrained("nari-labs/Dia-1.6B-0626", compute_dtype="float16")
-#model = Dia.from_pretrained("nari-labs/Dia-1.6B-0626", compute_dtype="float16", device=device)
-model = Dia.from_pretrained("nari-labs/Dia-1.6B-0626", compute_dtype="float32", device=device)
+#model = Dia.from_pretrained(target_model, compute_dtype="float16")
+#model = Dia.from_pretrained(target_model, compute_dtype="float16", device=device)
+model = Dia.from_pretrained(target_model, compute_dtype="float32", device=device)
+print(f"Loaded model - '{target_model}'")
 
 # You should put the transcript of the voice you want to clone
 # We will use the audio created by running simple.py as an example.
@@ -100,6 +102,7 @@ text_heap = clone_from_text
 processed_sound = AudioSegment.from_mp3(clone_from_audio)
 x = 0
 for input_text in text_to_generate:
+    print(f"Generating - `{input_text}`")
     output = model.generate(
         text_heap + input_text,
         audio_prompt=clone_from_audio if x == 0 else f"voice_clone_merged_{x - 1}.mp3",
@@ -117,3 +120,4 @@ for input_text in text_to_generate:
     processed_sound = processed_sound.append(AudioSegment.from_mp3(f"voice_clone_{x}.mp3"))
     processed_sound.export(f"voice_clone_merged_{x}.mp3", format="mp3")
     x += 1
+print("Done")
