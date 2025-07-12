@@ -101,7 +101,7 @@ for input_text in text_to_generate:
         #cfg_scale=4.0,
         cfg_scale=1.0,
         #temperature=1.8,
-        temperature=0.2,
+        temperature=4.5,
         top_p=0.90,
         cfg_filter_top_k=50,
     )
