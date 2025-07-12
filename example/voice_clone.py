@@ -11,9 +11,10 @@ model = Dia.from_pretrained("nari-labs/Dia-1.6B-0626", compute_dtype="float16")
 #clone_from_text = "[S1] Huge thanks to Asmongold for somehow finding my video and then reacting to it, and to everyone who's here now because of that. I'm legitimately like brand new to YouTube, and I genuinely did not expect this video to get really any attention, much less blow up now the way that it has, but here we are. So before all this, it really was just me and my 300 Spartans holding the line in the comments section and now it appears we've been overrun by roaches, which by the way, you guys [S2] Thanks to you all"
 #clone_from_text = "[S1] Huge thanks to Asmongold for somehow finding my video and then reacting to it, and to everyone who's here now because of that. I'm legitimately like brand new to YouTube, and I genuinely did not expect this video to get really any attention, much less blow up now the way that it has, but here we are. So before all this, it really was just me and my 300 Spartans holding the line in the comments section and now it appears we've been overrun by roaches, which by the way, you guys"
 #clone_from_audio = "simple.mp3"
-clone_from_text = "[S1] This is not the end of Doge, but really the beginning. My time as a special government employee necessarily had to end. It was a limited time thing. It's 134 days, I believe, which adds in a few days. So that comes with a time limit."
+#clone_from_text = "[S1] This is not the end of Doge, but really the beginning. My time as a special government employee necessarily had to end. It was a limited time thing. It's 134 days, I believe, which adds in a few days. So that comes with a time limit."
 #clone_from_audio = "girl.mp3"
-clone_from_audio = "elon.mp3"
+clone_from_text = "[S1] Huge thanks to Asmongold for somehow finding my video and then reacting to it, and to everyone who's here now because of that. I'm legitimately like brand new to YouTube."
+clone_from_audio = "girl_10s.mp3"
 
 # For your custom needs, replace above with below and add your audio file to this directory:
 # clone_from_text = "[S1] ... [S2] ... [S1] ... corresponding to your_audio_name.mp3"
