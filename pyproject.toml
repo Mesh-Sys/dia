@@ -61,7 +61,7 @@ lines-after-imports = 2
 #name = "pytorch-cu126"
 name = "pytorch"
 url = "https://download.pytorch.org/whl/cpu"
-default = true
+explicit = true
 
 [dependency-groups]
 dev = [
