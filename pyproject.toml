@@ -54,13 +54,14 @@ lines-after-imports = 2
 #  { index = "pytorch-cu126", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
 #]
 #
-#[[tool.uv.index]]
+[[tool.uv.index]]
 #name = "pytorch-cu126"
 #url = "https://download.pytorch.org/whl/cu126"
 #explicit = true
 #name = "pytorch-cu126"
+name = "pytorch"
 url = "https://download.pytorch.org/whl/cpu"
-explicit = true
+default = true
 
 [dependency-groups]
 dev = [
