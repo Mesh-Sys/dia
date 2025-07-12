@@ -23,18 +23,38 @@ clone_from_audio = "girl_10s.mp3"
 # Text to generate
 #text_to_generate = "[S1] Hello, how are you? [S2] I'm good, thank you. [S1] What's your name? [S2] My name is Dia. [S1] Nice to meet you. [S2] Nice to meet you too."
 #text_to_generate = "[S1] Hello, how are you? [S2] I'm good, thank you. [S1] What's your name? [S2] My name is Dia. [S1] Nice to meet you. [S2] Nice to meet you too."
-text_to_generate = "[S1] And I genuinely did not expect this video to get really any attention, much less blow up now the way that it has. [S1] But here we are. [S1] So before all this. [S1] It really was just me and my 300 Spartans holding the line in the comments section. [S1] And now it appears we've been overrun by roaches. [S1] which by the way, you guys."
+#text_to_generate = "[S1] And I genuinely did not expect this video to get really any attention, much less blow up now the way that it has. [S1] But here we are. [S1] So before all this. [S1] It really was just me and my 300 Spartans holding the line in the comments section. [S1] And now it appears we've been overrun by roaches. [S1] which by the way, you guys."
+text_to_generate = [
+    "[S1] And I genuinely did not expect this video to get really any attention, much less blow up now the way that it has.",
+    "[S1] But here we are.",
+    "[S1] So before all this.",
+    "[S1] It really was just me and my 300 Spartans holding the line in the comments section.",
+    "[S1] And now it appears we've been overrun by roaches.",
+    "[S1] which by the way, you guys.",
+]
 
 # It will only return the audio from the text_to_generate
-output = model.generate(
-    clone_from_text + text_to_generate,
-    audio_prompt=clone_from_audio,
-    use_torch_compile=False,
-    verbose=True,
-    cfg_scale=4.0,
-    temperature=1.8,
-    top_p=0.90,
-    cfg_filter_top_k=50,
-)
-
-model.save_audio("voice_clone_girl.mp3", output)
+#output = model.generate(
+#    clone_from_text + text_to_generate,
+#    audio_prompt=clone_from_audio,
+#    use_torch_compile=False,
+#    verbose=True,
+#    cfg_scale=4.0,
+#    temperature=1.8,
+#    top_p=0.90,
+#    cfg_filter_top_k=50,
+#)
+x = 0
+for input_text in text_to_generate:
+    output = model.generate(
+        (clone_from_text if x == 0 else text_to_generate[x - 1]) + input_text,
+        audio_prompt=clone_from_audio if x == 0 else f"voice_clone_{x - 1}.mp3",
+        use_torch_compile=False,
+        verbose=True,
+        cfg_scale=4.0,
+        temperature=1.8,
+        top_p=0.90,
+        cfg_filter_top_k=50,
+    )
+    model.save_audio(f"voice_clone_{x}.mp3", output)
+    x += 1
