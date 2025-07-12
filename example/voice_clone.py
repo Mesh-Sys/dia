@@ -2,7 +2,7 @@ import torch
 from dia.model import Dia
 
 # Select device: CPU or GPU
-device = torch.device("gpu")
+device = torch.device("cuda")
 print(f"Using device: {device}")
 
 target_model = "nari-labs/Dia-1.6B-0626"
