@@ -112,8 +112,9 @@ for input_text in text_to_generate:
         #cfg_scale=4.0,
         cfg_scale=1.0,
         temperature=1.8,
-        top_p=0.90,
+        #top_p=0.90,
         #top_p=3.1,
+        top_p=8.0,
         cfg_filter_top_k=50,
     )
     text_heap += input_text
