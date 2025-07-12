@@ -63,4 +63,4 @@ from pydub import AudioSegment
 processed_sound = AudioSegment.from_mp3(clone_from_audio)
 for i in range(len(text_to_generate)):
     processed_sound = processed_sound.append(AudioSegment.from_mp3(f"voice_clone_{i}.mp3"))
-processed_sound.export("voice_clone_merged", format="mp3")
+processed_sound.export("voice_clone_merged.mp3", format="mp3")
