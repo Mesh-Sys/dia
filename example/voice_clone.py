@@ -44,11 +44,37 @@ text_to_generate = [
 #    top_p=0.90,
 #    cfg_filter_top_k=50,
 #)
+from pydub import AudioSegment
+#x = 0
+#for input_text in text_to_generate:
+#    output = model.generate(
+#        (clone_from_text if x == 0 else text_to_generate[x - 1]) + input_text,
+#        audio_prompt=clone_from_audio if x == 0 else f"voice_clone_{x - 1}.mp3",
+#        use_torch_compile=False,
+#        verbose=True,
+#        cfg_scale=4.0,
+#        temperature=1.8,
+#        top_p=0.90,
+#        cfg_filter_top_k=50,
+#    )
+#    model.save_audio(f"voice_clone_{x}.mp3", output)
+#
+#processed_sound = AudioSegment.from_mp3(clone_from_audio)
+#for i in range(len(text_to_generate)):
+#    processed_sound = processed_sound.append(AudioSegment.from_mp3(f"voice_clone_{i}.mp3"))
+#processed_sound.export("voice_clone_merged.mp3", format="mp3")
+#    x += 1
+#processed_sound = AudioSegment.from_mp3(clone_from_audio)
+#for i in range(len(text_to_generate)):
+#    processed_sound = processed_sound.append(AudioSegment.from_mp3(f"voice_clone_{i}.mp3"))
+#processed_sound.export("voice_clone_merged.mp3", format="mp3")
+text_heap = clone_from_text
+processed_sound = AudioSegment.from_mp3(clone_from_audio)
 x = 0
 for input_text in text_to_generate:
     output = model.generate(
-        (clone_from_text if x == 0 else text_to_generate[x - 1]) + input_text,
-        audio_prompt=clone_from_audio if x == 0 else f"voice_clone_{x - 1}.mp3",
+        text_heap + input_text,
+        audio_prompt=clone_from_audio if x == 0 else f"voice_clone_merged_{x - 1}.mp3",
         use_torch_compile=False,
         verbose=True,
         cfg_scale=4.0,
@@ -56,11 +82,8 @@ for input_text in text_to_generate:
         top_p=0.90,
         cfg_filter_top_k=50,
     )
+    text_heap += input_text
     model.save_audio(f"voice_clone_{x}.mp3", output)
+    processed_sound = processed_sound.append(AudioSegment.from_mp3(f"voice_clone_{x}.mp3"))
+    processed_sound.export(f"voice_clone_merged_{x}.mp3", format="mp3")
     x += 1
-
-from pydub import AudioSegment
-processed_sound = AudioSegment.from_mp3(clone_from_audio)
-for i in range(len(text_to_generate)):
-    processed_sound = processed_sound.append(AudioSegment.from_mp3(f"voice_clone_{i}.mp3"))
-processed_sound.export("voice_clone_merged.mp3", format="mp3")
