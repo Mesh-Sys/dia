@@ -2,7 +2,7 @@ import tempfile
 import time
 from pathlib import Path
 from typing import Optional, Tuple
-import spaces
+#import spaces
 
 import gradio as gr
 import numpy as np
@@ -22,7 +22,7 @@ except Exception as e:
     raise
 
 
-@spaces.GPU(duration=500)
+#@spaces.GPU(duration=500)
 def run_inference(
     text_input: str,
     audio_prompt_input: Optional[Tuple[int, np.ndarray]],
