@@ -260,16 +260,7 @@ css = """
 #col-container {max-width: 90%; margin-left: auto; margin-right: auto;}
 """
 # Attempt to load default text from example.txt
-default_text = "[S1] Dia is an open weights text to dialogue model. \n[S2] You get full control over scripts and voices. \n[S1] Wow. Amazing. (laughs) \n[S2] Try it now on Git hub or Hugging Face."
-example_txt_path = Path("./example.txt")
-if example_txt_path.exists():
-    try:
-        default_text = example_txt_path.read_text(encoding="utf-8").strip()
-        if not default_text:  # Handle empty example file
-            default_text = "Example text file was empty."
-    except Exception as e:
-        print(f"Warning: Could not read example.txt: {e}")
-
+default_text = "[S1] And I genuinely did not expect this video to get really any attention, much less blow up now the way that it has."
 
 # Build Gradio UI
 with gr.Blocks(css=css, theme="gradio/dark") as demo:
