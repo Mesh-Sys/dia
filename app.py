@@ -341,61 +341,6 @@ with gr.Blocks(css=css) as demo:
         api_name="generate_audio",
     )
 
-    # Add examples (ensure the prompt path is correct or remove it if example file doesn't exist)
-    example_prompt_path = "./example_prompt.mp3"  # Adjust if needed
-    examples_list = [
-        [
-            "[S1] Oh fire! Oh my goodness! What's the procedure? What to we do people? The smoke could be coming through an air duct! \n[S2] Oh my god! Okay.. it's happening. Everybody stay calm! \n[S1] What's the procedure... \n[S2] Everybody stay fucking calm!!!... Everybody fucking calm down!!!!! \n[S1] No! No! If you touch the handle, if its hot there might be a fire down the hallway! ",
-            None,
-            3072,
-            3.0,
-            1.8,
-            0.95,
-            45,
-            1.0,
-        ],
-        [
-            "[S1] Open weights text to dialogue model. \n[S2] You get full control over scripts and voices. \n[S1] I'm biased, but I think we clearly won. \n[S2] Hard to disagree. (laughs) \n[S1] Thanks for listening to this demo. \n[S2] Try it now on Git hub and Hugging Face. \n[S1] If you liked our model, please give us a star and share to your friends. \n[S2] This was Nari Labs.",
-            example_prompt_path if Path(example_prompt_path).exists() else None,
-            3072,
-            3.0,
-            1.8,
-            0.95,
-            45,
-            1.0,
-        ],
-    ]
-
-    if examples_list:
-        gr.Examples(
-            examples=[
-                [
-                    ex[0],  # text
-                    ex[1],  # audio prompt path
-                    "",  # transcription placeholder
-                    *ex[2:],
-                ]
-                for ex in examples_list
-            ],
-            inputs=[
-                text_input,
-                audio_prompt_input,
-                transcription_input,
-                max_new_tokens,
-                cfg_scale,
-                temperature,
-                top_p,
-                cfg_filter_top_k,
-                speed_factor_slider,
-            ],
-            outputs=[audio_output],
-            fn=run_inference,
-            cache_examples=False,
-            label="Examples (Click to Run)",
-        )
-    else:
-        gr.Markdown("_(No examples configured or example prompt file missing)_")
-
 # --- Launch the App ---
 if __name__ == "__main__":
     print("Launching Gradio interface...")
