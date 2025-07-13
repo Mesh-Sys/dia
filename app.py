@@ -268,9 +268,9 @@ with gr.Blocks(css=css, theme="gradio/dark") as demo:
 
     with gr.Row(equal_height=False):
         with gr.Column(scale=1):
-            with gr.Accordion("Audio Reference Prompt (Optional)", open=False):
+            with gr.Accordion("Audio Reference Prompt", open=True):
                 audio_prompt_input = gr.Audio(
-                    label="Audio Prompt (Optional)",
+                    label="Audio Prompt",
                     show_label=True,
                     sources=["upload", "microphone"],
                     type="numpy",
@@ -298,40 +298,40 @@ with gr.Blocks(css=css, theme="gradio/dark") as demo:
                 )
                 cfg_scale = gr.Slider(
                     label="CFG Scale (Guidance Strength)",
-                    minimum=1.0,
-                    maximum=5.0,
-                    value=3.0,  # Default from inference.py
+                    minimum=0.2,
+                    maximum=10.0,
+                    value=1.0,  # Default from inference.py
                     step=0.1,
                     info="Higher values increase adherence to the text prompt.",
                 )
                 temperature = gr.Slider(
                     label="Temperature (Randomness)",
-                    minimum=1.0,
-                    maximum=2.5,
+                    minimum=0.1,
+                    maximum=10.0,
                     value=1.8,  # Default from inference.py
                     step=0.05,
                     info="Lower values make the output more deterministic, higher values increase randomness.",
                 )
                 top_p = gr.Slider(
                     label="Top P (Nucleus Sampling)",
-                    minimum=0.70,
-                    maximum=1.0,
-                    value=0.95,  # Default from inference.py
+                    minimum=0.1,
+                    maximum=10.0,
+                    value=3.1,  # Default from inference.py
                     step=0.01,
                     info="Filters vocabulary to the most likely tokens cumulatively reaching probability P.",
                 )
                 cfg_filter_top_k = gr.Slider(
                     label="CFG Filter Top K",
-                    minimum=15,
-                    maximum=100,
-                    value=45,
+                    minimum=1,
+                    maximum=200,
+                    value=50,
                     step=1,
                     info="Top k filter for CFG guidance.",
                 )
                 speed_factor_slider = gr.Slider(
                     label="Speed Factor",
-                    minimum=0.8,
-                    maximum=1.0,
+                    minimum=0.1,
+                    maximum=10.0,
                     value=1.0,
                     step=0.02,
                     info="Adjusts the speed of the generated audio (1.0 = original speed).",
