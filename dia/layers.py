@@ -61,7 +61,9 @@ class DenseGeneral(nn.Module):
 class MlpBlock(nn.Module):
     """MLP block using DenseGeneral."""
 
-    def __init__(self, embed_dim: int, intermediate_dim: int, compute_dtype: torch.dtype):
+    def __init__(
+        self, embed_dim: int, intermediate_dim: int, compute_dtype: torch.dtype
+    ):
         super().__init__()
         self.dtype = compute_dtype
 
@@ -98,8 +100,8 @@ class RotaryEmbedding(nn.Module):
     def __init__(
         self,
         embedding_dims: int,
-        min_timescale: float = 1.0,
-        max_timescale: float = 10000.0,
+        min_timescale: int = 1,
+        max_timescale: int = 10000,
         dtype: torch.dtype = torch.float32,
     ):
         super().__init__()
@@ -112,7 +114,9 @@ class RotaryEmbedding(nn.Module):
 
         half_embedding_dim = embedding_dims // 2
         fraction = (2.0 * torch.arange(0, half_embedding_dim)) / embedding_dims
-        timescale = (self.min_timescale * (self.max_timescale / self.min_timescale) ** fraction).to(torch.float32)
+        timescale = (
+            self.min_timescale * (self.max_timescale / self.min_timescale) ** fraction
+        ).to(torch.float32)
         self.register_buffer("timescale", timescale, persistent=False)
 
     def forward(self, inputs: torch.Tensor, position: torch.Tensor):
@@ -133,7 +137,10 @@ class RotaryEmbedding(nn.Module):
         first_half, second_half = torch.chunk(inputs.to(torch.float32), 2, dim=-1)
         first_part = first_half * cos - second_half * sin
         second_part = second_half * cos + first_half * sin
-        return torch.cat((first_part.to(self.compute_dtype), second_part.to(self.compute_dtype)), dim=-1)
+        return torch.cat(
+            (first_part.to(self.compute_dtype), second_part.to(self.compute_dtype)),
+            dim=-1,
+        )
 
 
 def custom_scaled_dot_product_attention(
@@ -173,7 +180,9 @@ def custom_scaled_dot_product_attention(
 
     # Apply causal mask if needed
     if is_causal:
-        causal_mask = torch.tril(torch.ones(T, S, dtype=torch.bool, device=query.device))
+        causal_mask = torch.tril(
+            torch.ones(T, S, dtype=torch.bool, device=query.device)
+        )
         scores = scores.masked_fill(~causal_mask, float("-inf"))
 
     # Apply attention mask if provided
@@ -210,7 +219,9 @@ class CrossAttention(nn.Module):
         self.output_dim = out_embed_dim if out_embed_dim is not None else q_embed_dim
         self.projected_query_dim = num_query_heads * head_dim
         if num_query_heads % num_kv_heads != 0:
-            raise ValueError(f"num_query_heads ({num_query_heads}) must be divisible by num_kv_heads ({num_kv_heads})")
+            raise ValueError(
+                f"num_query_heads ({num_query_heads}) must be divisible by num_kv_heads ({num_kv_heads})"
+            )
         self.num_gqa_groups = num_query_heads // num_kv_heads
 
         # --- Projection Layers using DenseGeneral ---
@@ -251,7 +262,8 @@ class CrossAttention(nn.Module):
         Xq: torch.Tensor,  # (B, T, D) T = 1 in AR generation
         q_positions: torch.Tensor,  # (B, T)
         kv_positions: torch.Tensor | None = None,  # (B, S)
-        attn_mask: torch.Tensor | None = None,  # None in Decoder Self Attention, Valid mask in Others
+        attn_mask: torch.Tensor
+        | None = None,  # None in Decoder Self Attention, Valid mask in Others
         cache: KVCache | None = None,  # None in Encoder, KVCache in Decoder
         is_causal: bool = False,
     ) -> tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor] | None]:
@@ -278,8 +290,10 @@ class CrossAttention(nn.Module):
         Xq_BxTxNxH = self.q_proj(Xq)
         Xq_BxNxTxH = Xq_BxTxNxH.transpose(1, 2)
 
-        attn_k: torch.Tensor | None = cache.k if cache is not None else None
-        attn_v: torch.Tensor | None = cache.v if cache is not None else None
+        attn_k: torch.Tensor | None = None
+        attn_v: torch.Tensor | None = None
+
+        attn_k, attn_v = cache.k, cache.v
 
         # Use custom attention for MPS backend, otherwise use optimized PyTorch function
         is_mps = Xq.device.type == "mps" and torch.backends.mps.is_available()
@@ -330,10 +344,14 @@ class FusedQKV(nn.Module):
         self.kv_output_dim = num_kv_heads * kv_head_dim
         self.linear = nn.Linear(in_features, out_features, bias=bias)
 
-    def forward(self, inputs: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    def forward(
+        self, inputs: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         x = self.linear(inputs)
 
-        q, k, v = x.split([self.q_output_dim, self.kv_output_dim, self.kv_output_dim], dim=-1)
+        q, k, v = x.split(
+            [self.q_output_dim, self.kv_output_dim, self.kv_output_dim], dim=-1
+        )
 
         q = q.reshape(q.shape[:-1] + (self.num_q_heads, self.q_head_dim))
         k = k.reshape(k.shape[:-1] + (self.num_kv_heads, self.kv_head_dim))
@@ -347,7 +365,7 @@ class SelfAttention(nn.Module):
 
     def __init__(
         self,
-        config: EncoderConfig | DecoderConfig,
+        config: DiaConfig,
         q_embed_dim: int,
         kv_embed_dim: int,
         num_query_heads: int,
@@ -363,7 +381,9 @@ class SelfAttention(nn.Module):
         self.output_dim = out_embed_dim if out_embed_dim is not None else q_embed_dim
         self.projected_query_dim = num_query_heads * head_dim
         if num_query_heads % num_kv_heads != 0:
-            raise ValueError(f"num_query_heads ({num_query_heads}) must be divisible by num_kv_heads ({num_kv_heads})")
+            raise ValueError(
+                f"num_query_heads ({num_query_heads}) must be divisible by num_kv_heads ({num_kv_heads})"
+            )
         self.num_gqa_groups = num_query_heads // num_kv_heads
         self.kv_embed_dim = kv_embed_dim
         self.q_embed_dim = q_embed_dim
@@ -424,14 +444,19 @@ class SelfAttention(nn.Module):
 
         self.qkv = FusedQKV(
             self.kv_embed_dim,
-            (self.num_query_heads * self.head_dim + 2 * (self.num_kv_heads * self.head_dim)),
+            (
+                self.num_query_heads * self.head_dim
+                + 2 * (self.num_kv_heads * self.head_dim)
+            ),
             bias=False,
             num_q_heads=self.num_query_heads,
             q_head_dim=self.head_dim,
             num_kv_heads=self.num_kv_heads,
             kv_head_dim=self.head_dim,
         )
-        self.qkv.linear.weight.data = torch.cat([q_proj_weight, k_proj_weight, v_proj_weight], dim=0)
+        self.qkv.linear.weight.data = torch.cat(
+            [q_proj_weight, k_proj_weight, v_proj_weight], dim=0
+        )
 
         # print(f"qkv.weight.shape: {self.qkv.linear.weight.shape}")
         self.is_fused_qkv = True
@@ -441,7 +466,8 @@ class SelfAttention(nn.Module):
         X: torch.Tensor,  # (B, T, D) T = 1 in AR generation
         q_positions: torch.Tensor,  # (B, T)
         kv_positions: torch.Tensor | None = None,  # (B, S)
-        attn_mask: torch.Tensor | None = None,  # None in Decoder Self Attention, Valid mask in Others
+        attn_mask: torch.Tensor
+        | None = None,  # None in Decoder Self Attention, Valid mask in Others
         cache: KVCache | None = None,  # None in Encoder, KVCache in Decoder
         prefill: bool = False,
         is_causal: bool = False,
@@ -484,8 +510,8 @@ class SelfAttention(nn.Module):
 
         Xq_BxNxTxH = Xq_BxTxNxH.transpose(1, 2)
 
-        attn_k: torch.Tensor | None = cache.k if cache is not None else None
-        attn_v: torch.Tensor | None = cache.v if cache is not None else None
+        attn_k: torch.Tensor | None = None
+        attn_v: torch.Tensor | None = None
 
         Xk_BxKxSxH = Xk_BxSxKxH.transpose(1, 2)  # (B, K, S, H)
         Xv_BxKxSxH = Xv_BxSxKxH.transpose(1, 2)  # (B, K, S, H)
@@ -602,7 +628,12 @@ class Encoder(nn.Module):
             enc_config.hidden_size,
             dtype=compute_dtype,
         )
-        self.layers = nn.ModuleList([EncoderLayer(config, compute_dtype) for _ in range(enc_config.num_hidden_layers)])
+        self.layers = nn.ModuleList(
+            [
+                EncoderLayer(config, compute_dtype)
+                for _ in range(enc_config.num_hidden_layers)
+            ]
+        )
         self.norm = RMSNorm(
             enc_config.hidden_size,
             eps=enc_config.norm_eps,
@@ -739,12 +770,17 @@ class Decoder(nn.Module):
 
         self.embeddings = nn.ModuleList(
             [
-                nn.Embedding(dec_config.vocab_size, dec_config.hidden_size, dtype=compute_dtype)
+                nn.Embedding(
+                    dec_config.vocab_size, dec_config.hidden_size, dtype=compute_dtype
+                )
                 for _ in range(self.num_channels)
             ]
         )
         self.layers = nn.ModuleList(
-            [DecoderLayer(config=config, compute_dtype=compute_dtype) for _ in range(self.num_layers)]
+            [
+                DecoderLayer(config=config, compute_dtype=compute_dtype)
+                for _ in range(self.num_layers)
+            ]
         )
 
         self.norm = RMSNorm(
@@ -816,7 +852,9 @@ class Decoder(nn.Module):
 
         return logits_Bx1xCxV.to(torch.float32)
 
-    def forward(self, tgt_ids_BxTxC: torch.Tensor, state: DecoderInferenceState) -> torch.Tensor:
+    def forward(
+        self, tgt_ids_BxTxC: torch.Tensor, state: DecoderInferenceState
+    ) -> torch.Tensor:
         """
         Forward pass for the Decoder stack, managing KV caches.
         Args:
