@@ -114,6 +114,10 @@ class Dia:
         super().__init__()
         self.config = config
         self.device = device if device is not None else _get_default_device()
+
+        torch.set_num_threads(4)
+        torch.set_num_interop_threads(4)
+
         if isinstance(compute_dtype, str):
             compute_dtype = ComputeDtype(compute_dtype)
         self.compute_dtype = compute_dtype.to_dtype()
