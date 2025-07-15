@@ -13,7 +13,7 @@ import soundfile as sf
 import torch
 
 from dia.model import Dia
-from whisper import load_model
+#from whisper import load_model
 
 
 # --- Global Setup ---
@@ -50,7 +50,7 @@ try:
     dtype = dtype_map.get(device.type, "float16")
     print(f"Using device: {device}, attempting to load model with {dtype}")
     model = Dia.from_pretrained("nari-labs/Dia-1.6B-0626", compute_dtype=dtype, device=device)
-    whisper_model = load_model("medium.en", device)
+    #whisper_model = load_model("medium.en", device)
 except Exception as e:
     print(f"Error loading Nari model: {e}")
     raise
