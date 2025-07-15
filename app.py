@@ -1,5 +1,4 @@
 import argparse
-import contextlib
 import io
 import random
 import tempfile
@@ -13,8 +12,6 @@ import soundfile as sf
 import torch
 
 from dia.model import Dia
-#from whisper import load_model
-
 
 # --- Global Setup ---
 parser = argparse.ArgumentParser(description="Gradio interface for Nari TTS")
@@ -22,7 +19,6 @@ parser.add_argument("--device", type=str, default=None, help="Force device (e.g.
 parser.add_argument("--share", action="store_true", help="Enable Gradio sharing")
 
 args = parser.parse_args()
-
 
 # Determine device
 if args.device:
@@ -38,6 +34,7 @@ else:
 
 print(f"Using device: {device}")
 
+
 # Load Nari model and config
 print("Loading Nari model...")
 try:
@@ -50,7 +47,6 @@ try:
     dtype = dtype_map.get(device.type, "float16")
     print(f"Using device: {device}, attempting to load model with {dtype}")
     model = Dia.from_pretrained("nari-labs/Dia-1.6B-0626", compute_dtype=dtype, device=device)
-    #whisper_model = load_model("medium.en", device)
 except Exception as e:
     print(f"Error loading Nari model: {e}")
     raise
@@ -89,8 +85,7 @@ def run_inference(
     Uses temporary files for text and audio prompt compatibility with inference.generate.
     """
     global model, device  # Access global model, config, device
-    console_output_buffer = io.StringIO()
-
+ 
     # Prepend transcript text if audio_prompt provided
     if audio_prompt_input and audio_prompt_text_input and not audio_prompt_text_input.isspace():
         text_input = audio_prompt_text_input + "\n" + text_input
@@ -237,10 +232,7 @@ def run_inference(
                 print(f"Deleted temporary audio prompt file: {temp_audio_prompt_path}")
             except OSError as e:
                 print(f"Warning: Error deleting temporary audio prompt file {temp_audio_prompt_path}: {e}")
-    # After generation, capture the printed output
-    console_output = console_output_buffer.getvalue()
-
-    return output_audio, seed, console_output
+    return output_audio
 
 
 # --- Create Gradio Interface ---
@@ -256,7 +248,7 @@ with gr.Blocks(css=css, theme="gradio/dark") as demo:
 
     with gr.Row(equal_height=False):
         with gr.Column(scale=1):
-            with gr.Accordion("Audio Reference Prompt", open=True):
+            with gr.Accordion("Audio Reference Prompt"):
                 audio_prompt_input = gr.Audio(
                     label="Audio Prompt",
                     show_label=True,
@@ -341,8 +333,6 @@ with gr.Blocks(css=css, theme="gradio/dark") as demo:
                 type="numpy",
                 autoplay=False,
             )
-            seed_output = gr.Textbox(label="Generation Seed", interactive=False)
-            console_output = gr.Textbox(label="Console Output Log", lines=10, interactive=False)
 
     # Link button click to function
     run_button.click(
@@ -360,17 +350,11 @@ with gr.Blocks(css=css, theme="gradio/dark") as demo:
             seed_input,
         ],
         outputs=[
-            audio_output,
-            seed_output,
-            console_output,
-        ],  # Add status_output here if using it
-        api_name="generate_audio",
+            audio_output
+        ],
     )
 
 # --- Launch the App ---
 if __name__ == "__main__":
     print("Launching Gradio interface...")
-
-    # set `GRADIO_SERVER_NAME`, `GRADIO_SERVER_PORT` env vars to override default values
-    # use `GRADIO_SERVER_NAME=0.0.0.0` for Docker
     demo.launch(share=args.share)
