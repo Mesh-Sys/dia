@@ -13,6 +13,7 @@ wheels/
 
 **/*.pth
 **/*.mp3
+*.wav
 !example_prompt.mp3
 
 .ruff_cache

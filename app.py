@@ -88,7 +88,8 @@ def run_inference(
  
     # Prepend transcript text if audio_prompt provided
     if audio_prompt_input and audio_prompt_text_input and not audio_prompt_text_input.isspace():
-        text_input = audio_prompt_text_input + "\n" + text_input
+        #text_input = audio_prompt_text_input + "\n" + text_input
+        text_input = f"{audio_prompt_text_input}\n{text_input}" if not text_input or text_input.isspace() else f"[S1] {audio_prompt_text_input}\n[S1] {text_input}"
         text_input = text_input.strip()
 
     if audio_prompt_input and (not audio_prompt_text_input or audio_prompt_text_input.isspace()):
@@ -240,7 +241,7 @@ css = """
 #col-container {max-width: 90%; margin-left: auto; margin-right: auto;}
 """
 # Attempt to load default text from example.txt
-default_text = "[S1] And I genuinely did not expect this video to get really any attention, much less blow up now the way that it has."
+default_text = "And I genuinely did not expect this video to get really any attention, much less blow up now the way that it has."
 
 # Build Gradio UI
 with gr.Blocks(css=css, theme="gradio/dark") as demo:
