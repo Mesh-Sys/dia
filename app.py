@@ -13,7 +13,6 @@ import soundfile as sf
 import torch
 
 from dia.model import Dia
-from whisper import load_model
 
 
 # --- Global Setup ---
@@ -50,7 +49,6 @@ try:
     dtype = dtype_map.get(device.type, "float16")
     print(f"Using device: {device}, attempting to load model with {dtype}")
     model = Dia.from_pretrained("nari-labs/Dia-1.6B-0626", compute_dtype=dtype, device=device)
-    whisper_model = load_model("medium.en", device)
 except Exception as e:
     print(f"Error loading Nari model: {e}")
     raise
@@ -66,10 +64,6 @@ def set_seed(seed: int):
         torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
-
-
-def whisper_transcribe(audio_path):
-    return whisper_model.transcribe(audio_path)
 
 
 def run_inference(
@@ -266,17 +260,26 @@ css = """
 #col-container {max-width: 90%; margin-left: auto; margin-right: auto;}
 """
 # Attempt to load default text from example.txt
-default_text = "[S1] And I genuinely did not expect this video to get really any attention, much less blow up now the way that it has."
+default_text = "[S1] Dia is an open weights text to dialogue model. \n[S2] You get full control over scripts and voices. \n[S1] Wow. Amazing. (laughs) \n[S2] Try it now on Git hub or Hugging Face."
+example_txt_path = Path("./example.txt")
+if example_txt_path.exists():
+    try:
+        default_text = example_txt_path.read_text(encoding="utf-8").strip()
+        if not default_text:  # Handle empty example file
+            default_text = "Example text file was empty."
+    except Exception as e:
+        print(f"Warning: Could not read example.txt: {e}")
+
 
 # Build Gradio UI
 with gr.Blocks(css=css, theme="gradio/dark") as demo:
-    gr.Markdown("# Text-to-Speech Synthesis")
+    gr.Markdown("# Nari Text-to-Speech Synthesis")
 
     with gr.Row(equal_height=False):
         with gr.Column(scale=1):
-            with gr.Accordion("Audio Reference Prompt", open=True):
+            with gr.Accordion("Audio Reference Prompt (Optional)", open=False):
                 audio_prompt_input = gr.Audio(
-                    label="Audio Prompt",
+                    label="Audio Prompt (Optional)",
                     show_label=True,
                     sources=["upload", "microphone"],
                     type="numpy",
@@ -304,40 +307,40 @@ with gr.Blocks(css=css, theme="gradio/dark") as demo:
                 )
                 cfg_scale = gr.Slider(
                     label="CFG Scale (Guidance Strength)",
-                    minimum=0.2,
-                    maximum=10.0,
-                    value=1.0,  # Default from inference.py
+                    minimum=1.0,
+                    maximum=5.0,
+                    value=3.0,  # Default from inference.py
                     step=0.1,
                     info="Higher values increase adherence to the text prompt.",
                 )
                 temperature = gr.Slider(
                     label="Temperature (Randomness)",
-                    minimum=0.1,
-                    maximum=10.0,
+                    minimum=1.0,
+                    maximum=2.5,
                     value=1.8,  # Default from inference.py
                     step=0.05,
                     info="Lower values make the output more deterministic, higher values increase randomness.",
                 )
                 top_p = gr.Slider(
                     label="Top P (Nucleus Sampling)",
-                    minimum=0.1,
-                    maximum=10.0,
-                    value=3.1,  # Default from inference.py
+                    minimum=0.70,
+                    maximum=1.0,
+                    value=0.95,  # Default from inference.py
                     step=0.01,
                     info="Filters vocabulary to the most likely tokens cumulatively reaching probability P.",
                 )
                 cfg_filter_top_k = gr.Slider(
                     label="CFG Filter Top K",
-                    minimum=1,
-                    maximum=200,
-                    value=50,
+                    minimum=15,
+                    maximum=100,
+                    value=45,
                     step=1,
                     info="Top k filter for CFG guidance.",
                 )
                 speed_factor_slider = gr.Slider(
                     label="Speed Factor",
-                    minimum=0.1,
-                    maximum=10.0,
+                    minimum=0.8,
+                    maximum=1.0,
                     value=1.0,
                     step=0.02,
                     info="Adjusts the speed of the generated audio (1.0 = original speed).",
@@ -384,6 +387,53 @@ with gr.Blocks(css=css, theme="gradio/dark") as demo:
         ],  # Add status_output here if using it
         api_name="generate_audio",
     )
+
+    # Add examples (ensure the prompt path is correct or remove it if example file doesn't exist)
+    example_prompt_path = "./example_prompt.mp3"  # Adjust if needed
+    examples_list = [
+        [
+            "[S1] Oh fire! Oh my goodness! What's the procedure? What to we do people? The smoke could be coming through an air duct! \n[S2] Oh my god! Okay.. it's happening. Everybody stay calm! \n[S1] What's the procedure... \n[S2] Everybody stay fucking calm!!!... Everybody fucking calm down!!!!! \n[S1] No! No! If you touch the handle, if its hot there might be a fire down the hallway! ",
+            None,
+            3072,
+            3.0,
+            1.8,
+            0.95,
+            45,
+            1.0,
+        ],
+        [
+            "[S1] Open weights text to dialogue model. \n[S2] You get full control over scripts and voices. \n[S1] I'm biased, but I think we clearly won. \n[S2] Hard to disagree. (laughs) \n[S1] Thanks for listening to this demo. \n[S2] Try it now on Git hub and Hugging Face. \n[S1] If you liked our model, please give us a star and share to your friends. \n[S2] This was Nari Labs.",
+            example_prompt_path if Path(example_prompt_path).exists() else None,
+            3072,
+            3.0,
+            1.8,
+            0.95,
+            45,
+            1.0,
+        ],
+    ]
+
+    if examples_list:
+        gr.Examples(
+            examples=examples_list,
+            inputs=[
+                text_input,
+                audio_prompt_input,
+                max_new_tokens,
+                cfg_scale,
+                temperature,
+                top_p,
+                cfg_filter_top_k,
+                speed_factor_slider,
+                seed_input,
+            ],
+            outputs=[audio_output],
+            fn=run_inference,
+            cache_examples=False,
+            label="Examples (Click to Run)",
+        )
+    else:
+        gr.Markdown("_(No examples configured or example prompt file missing)_")
 
 # --- Launch the App ---
 if __name__ == "__main__":
